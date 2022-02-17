@@ -1,0 +1,3 @@
+
+# cat=features/enable/1; type=string; label=Secret key given from Mobilistics admin panel
+secret =
