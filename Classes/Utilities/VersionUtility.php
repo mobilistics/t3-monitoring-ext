@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MobilisticsGmbH\PrometheusMonitoring\Utilities;
 
 /*
@@ -21,7 +23,7 @@ class VersionUtility
      * @param string $versionNumber
      * @return int
      */
-    public static function convertVersionToInteger($versionNumber)
+    public static function convertVersionToInteger(string $versionNumber)
     {
         $versionParts = explode('.', $versionNumber);
         $version = $versionParts[0];
@@ -42,7 +44,7 @@ class VersionUtility
      * @param string $versionInteger
      * @return string
      */
-    public static function convertIntegerToVersionNumber($versionInteger)
+    public static function convertIntegerToVersionNumber(string $versionInteger)
     {
         $versionString = str_pad($versionInteger, 9, '0', STR_PAD_LEFT);
         $parts = [

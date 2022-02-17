@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MobilisticsGmbH\PrometheusMonitoring;
 
 /*
@@ -15,18 +17,28 @@ namespace MobilisticsGmbH\PrometheusMonitoring;
  * LICENSE file that was distributed with this source code.
  */
 
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use MobilisticsGmbH\PrometheusMonitoring\Utilities\VersionUtility;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Http\Response;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\VersionNumberUtility;
+use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use MobilisticsGmbH\PrometheusMonitoring\Service\PrometheusDataService;
 
 class MetricsExporter extends ActionController
 {
-    public function main()
+    /**
+     * @param ServerRequestInterface $request
+     * @return ResponseInterface
+     */
+    public function export(ServerRequestInterface $request): ResponseInterface
     {
+        $response = GeneralUtility::makeInstance(Response::class);
+
         // check if secret key is given and correct
-        if (!$this->checkIfSecretKeyIsGiven($_GET)) {
-            header(' ', true, 404);die();
+        if (!$this->checkIfSecretKeyIsGiven($request->getQueryParams())) {
+            return $response->withStatus(404);
         }
 
         // get prometheus data
@@ -34,20 +46,22 @@ class MetricsExporter extends ActionController
         $data = $prometheusDataService->getPrometheusData();
 
         // set response
-        header('Content-Type', 'text/plain; charset=utf-8');
-        echo nl2br($data);die();
+        $response = $response->withHeader('Content-Type', 'text/plain; charset=utf-8');
+        $response->getBody()->write($data);
+
+        return $response;
     }
 
     /**
      * @param array $queryParams
      * @return bool
      */
-    protected function checkIfSecretKeyIsGiven(array $queryParams)
+    protected function checkIfSecretKeyIsGiven(array $queryParams): bool
     {
         $settings = $this->getSettings();
         // secret
         if (!empty($settings['secret']) && strlen($settings['secret']) >= 32) {
-            $secret = $queryParams['secret'] ? $queryParams['secret'] : '';
+            $secret = $queryParams['secret'] ?? '';
             if ($secret !== $settings['secret']) {
                 return false;
             }
@@ -61,10 +75,11 @@ class MetricsExporter extends ActionController
     /**
      * @return array
      */
-    protected function getSettings()
+    protected function getSettings(): array
     {
         $configuration = [];
         try {
+            // @phpstan-ignore-next-line
             $isVersion9Up = VersionUtility::convertVersionToInteger(TYPO3_version) >= 9000000;
             if ($isVersion9Up) {
                 $extensionConfiguration = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\ExtensionConfiguration::class);
@@ -79,6 +94,3 @@ class MetricsExporter extends ActionController
         return $configuration;
     }
 }
-
-$eid = GeneralUtility::makeInstance('MobilisticsGmbH\PrometheusMonitoring\MetricsExporter');
-echo $eid->main();

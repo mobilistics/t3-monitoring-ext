@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MobilisticsGmbH\PrometheusMonitoring\Service;
 
 /*
@@ -32,10 +34,11 @@ class PrometheusDataService
     /**
      * @return string
      */
-    public function getPrometheusData()
+    public function getPrometheusData(): string
     {
         $data = [];
         // get current TYPO3 version
+        // @phpstan-ignore-next-line
         $data['typo3Version'] = TYPO3_version;
 
         // get installed extensions and version number
@@ -58,7 +61,7 @@ class PrometheusDataService
      * @param array $dataToFormat
      * @return string
      */
-    private function getPrometheusFormattedData(array $dataToFormat)
+    private function getPrometheusFormattedData(array $dataToFormat): string
     {
         $formattedData = 'typo3_version_state{actual="' . $dataToFormat['typo3Version'] . '"} ' . VersionUtility::convertVersionToInteger($dataToFormat['typo3Version']) . PHP_EOL;
         foreach ($dataToFormat['extensions'] as $key => $value) {
