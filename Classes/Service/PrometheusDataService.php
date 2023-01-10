@@ -67,7 +67,9 @@ class PrometheusDataService
         foreach ($dataToFormat['extensions'] as $key => $value) {
 
             // cleanup version number
-            $value['version'] = str_replace("v", "", strtolower($value['version']));
+            if(substr($value['version'],-1,1)  == 'v' || substr($value['version'],0,1) == 'v') {
+                $value['version'] = str_replace("v", "", strtolower($value['version']));
+            }
 
             if (!strpos($value['siteRelPath'], "sysext")) {
                 // third party extensions
