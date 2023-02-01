@@ -73,10 +73,10 @@ class PrometheusDataService
 
             if (!strpos($value['siteRelPath'], "sysext")) {
                 // third party extensions
-                $formattedData .= 'typo3_extension_state{extKey="' . $key . '" actual="'. $value['version'] .'"} ' . VersionUtility::convertVersionToInteger($value['version']) . PHP_EOL;
+                $formattedData .= 'typo3_extension_state{extKey="' . $key . '", actual="'. $value['version'] .'"} ' . VersionUtility::convertVersionToInteger($value['version']) . PHP_EOL;
             } else {
                 // core extensions
-                $formattedData .= 'typo3_core_extension_state{extKey="' . $key . '" actual="'. $value['version'] .'"} ' . VersionUtility::convertVersionToInteger($value['version']) . PHP_EOL;
+                $formattedData .= 'typo3_core_extension_state{extKey="' . $key . '", actual="'. $value['version'] .'"} ' . VersionUtility::convertVersionToInteger($value['version']) . PHP_EOL;
             }
         }
 
