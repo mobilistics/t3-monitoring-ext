@@ -29,47 +29,32 @@ use MobilisticsGmbH\PrometheusMonitoring\Service\PrometheusDataService;
 class MetricsExporter extends ActionController
 {
     /**
-     * @param ServerRequestInterface $request
      * @return ResponseInterface
      */
-    public function export(ServerRequestInterface $request): ResponseInterface
+    public function export(): ResponseInterface
     {
         $response = GeneralUtility::makeInstance(Response::class);
-
-        // check if secret key is given and correct
-        if (!$this->checkIfSecretKeyIsGiven($request->getQueryParams())) {
-            return $response->withStatus(404);
-        }
-
-        // get prometheus data
-        $prometheusDataService = GeneralUtility::makeInstance(PrometheusDataService::class);
-        $data = $prometheusDataService->getPrometheusData();
-
-        // set response
-        $response = $response->withHeader('Content-Type', 'text/plain; charset=utf-8');
-        $response->getBody()->write($data);
-
-        return $response;
-    }
-
-    /**
-     * @param array $queryParams
-     * @return bool
-     */
-    protected function checkIfSecretKeyIsGiven(array $queryParams): bool
-    {
+        $header = getallheaders();
         $settings = $this->getSettings();
-        // secret
-        if (!empty($settings['secret']) && strlen($settings['secret']) >= 32) {
-            $secret = $queryParams['secret'] ?? '';
-            if ($secret !== $settings['secret']) {
-                return false;
-            }
-        } else {
-            return false;
-        }
 
-        return true;
+        if ((is_array($header) && key_exists('Hmac', $header)) && (!empty($settings['secret']) && strlen($settings['secret']) >= 32)) {
+            $hmac_header = $header['Hmac'];
+            $body = file_get_contents('php://input');
+
+            if (hash_equals($hmac_header, hash_hmac('sha256', $body, $settings['secret']))) {
+                // get prometheus data
+                $prometheusDataService = GeneralUtility::makeInstance(PrometheusDataService::class);
+                $data = $prometheusDataService->getPrometheusData();
+
+                // set response
+                $response = $response->withHeader('Content-Type', 'text/plain; charset=utf-8')
+                    ->withAddedHeader('HMAC', hash_hmac('sha256', $data, $settings['secret']));
+                $response->getBody()->write($data);
+
+                return $response;
+            }
+        }
+        return $response->withStatus(404);
     }
 
     /**
