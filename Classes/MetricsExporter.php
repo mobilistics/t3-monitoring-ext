@@ -41,9 +41,9 @@ class MetricsExporter extends ActionController
         $method = 'hmac';
 
         if ((!empty($settings['secret']) && strlen($settings['secret']) >= 32)) {
-            if ((!isset($settings['unsecure'])) or ($settings['unsecure'] != 1)) {
+            if (!isset($settings['unsecure']) || $settings['unsecure'] != 1) {
                 $header = getallheaders();
-                if (is_array($header) && key_exists('Hmac', $header)) {
+                if (is_array($header) && array_key_exists('Hmac', $header)) {
                     $hmac_header = $header['Hmac'];
                     $body = file_get_contents('php://input');
 
@@ -56,11 +56,12 @@ class MetricsExporter extends ActionController
                 if (!$this->checkIfSecretKeyIsGiven($request->getQueryParams())) {
                     return $response->withStatus(404);
                 }
+
                 $access = true;
                 $method = 'get';
             }
 
-            if ($access === true) {
+            if ($access) {
                 // get prometheus data
                 $prometheusDataService = GeneralUtility::makeInstance(PrometheusDataService::class);
                 $data = $prometheusDataService->getPrometheusData();
@@ -71,6 +72,7 @@ class MetricsExporter extends ActionController
                     $response = $response->withHeader('Content-Type', 'text/plain; charset=utf-8')
                         ->withAddedHeader('HMAC', hash_hmac('sha256', $data, $settings['secret']));
                 }
+
                 $response->getBody()->write($data);
                 return $response;
             }
@@ -83,8 +85,7 @@ class MetricsExporter extends ActionController
      * @param array $queryParams
      * @return bool
      */
-    protected
-    function checkIfSecretKeyIsGiven(array $queryParams): bool
+    protected function checkIfSecretKeyIsGiven(array $queryParams): bool
     {
         $settings = $this->getSettings();
         // secret
@@ -104,8 +105,7 @@ class MetricsExporter extends ActionController
     /**
      * @return array
      */
-    protected
-    function getSettings(): array
+    protected function getSettings(): array
     {
         $configuration = [];
         try {
