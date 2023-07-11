@@ -1,3 +1,6 @@
 
 # cat=features/enable/1; type=string; label=Secret key given from Mobilistics admin panel
 secret =
+
+# cat=features/enable/1; type=boolean; label=Use GET-Parameter Validation instead of Hmac (Use this if the site verification don't work)
+unsecure = 0
