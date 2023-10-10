@@ -40,7 +40,7 @@ class PrometheusDataService
         $data = [];
         // get current TYPO3 version
         // @phpstan-ignore-next-line
-        $TYPO3_version = new Typo3Version;
+        $TYPO3_version = new Typo3Version();
 
         $data['typo3Version'] =   $TYPO3_version->getVersion();
 
