@@ -16,12 +16,12 @@ $EM_CONF[$_EXTKEY] = [
     'category' => 'misc',
     'author' => 'Mobilistics GmbH',
     'author_email' => 'info@mobilistics.de',
-    'state' => 'beta',
+    'state' => 'stable',
     'clearCacheOnLoad' => 0,
-    'version' => '0.1.4',
+    'version' => '1.0.0',
     'constraints' => [
         'depends' => [
-            'typo3' => '7.6.0-11.5.99'
+            'typo3' => '12.4.99'
         ],
         'conflicts' => [],
         'suggests' => [],

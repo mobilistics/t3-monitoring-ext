@@ -10,11 +10,11 @@
 	],
 	"license": "GPL-2.0-or-later",
 	"require": {
-		"php": ">=7.2",
-		"typo3/cms-core": "^7.6 | ^8.7 | ^9.5 | ^10.4 | ^11.5"
+		"php": ">=8.0",
+		"typo3/cms-core": "^12.4"
 	},
 	"require-dev": {
-		"typo3/testing-framework": "^6.9"
+		"typo3/testing-framework": "^8.0"
 	},
 	"autoload": {
 		"psr-4": {

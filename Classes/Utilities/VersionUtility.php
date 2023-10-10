@@ -23,12 +23,12 @@ class VersionUtility
      * @param string $versionNumber
      * @return int
      */
-    public static function convertVersionToInteger(string $versionNumber)
+    public static function convertVersionToInteger(string $versionNumber): int
     {
         $versionParts = explode('.', $versionNumber);
         $version = $versionParts[0];
         for ($i = 1; $i < 3; ++$i) {
-            if (!empty($versionParts[$i])) {
+            if ($versionParts[$i] ?? '' !== '') {
                 $version .= str_pad((string)(int)$versionParts[$i], 3, '0', STR_PAD_LEFT);
             } else {
                 $version .= '000';
@@ -44,7 +44,7 @@ class VersionUtility
      * @param string $versionInteger
      * @return string
      */
-    public static function convertIntegerToVersionNumber(string $versionInteger)
+    public static function convertIntegerToVersionNumber(string $versionInteger): string
     {
         $versionString = str_pad($versionInteger, 9, '0', STR_PAD_LEFT);
         $parts = [
