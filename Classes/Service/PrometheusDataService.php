@@ -15,6 +15,7 @@ namespace MobilisticsGmbH\PrometheusMonitoring\Service;
  *
  */
 
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use MobilisticsGmbH\PrometheusMonitoring\Utilities\VersionUtility;
@@ -39,16 +40,14 @@ class PrometheusDataService
         $data = [];
         // get current TYPO3 version
         // @phpstan-ignore-next-line
-        $data['typo3Version'] = TYPO3_version;
+        $TYPO3_version = new Typo3Version();
+
+        $data['typo3Version'] =   $TYPO3_version->getVersion();
 
         // get installed extensions and version number
         $installedExtensions = $this->packageManager->getActivePackages();
-        foreach ($installedExtensions as $package) {
-            $packagePath = $package->getPackagePath();
-            if (!strpos($packagePath, "sysext") && !strpos($packagePath, "typo3conf")) {
-                continue;
-            }
 
+        foreach ($installedExtensions as $package) {
             $extKey = $package->getPackageKey();
             $data['extensions'][$extKey]['siteRelPath'] = $package->getPackagePath();
             $data['extensions'][$extKey]['version'] = $package->getPackageMetaData()->getVersion();
@@ -67,11 +66,11 @@ class PrometheusDataService
         foreach ($dataToFormat['extensions'] as $key => $value) {
 
             // cleanup version number
-            if(substr($value['version'],-1,1)  == 'v' || substr($value['version'],0,1) == 'v') {
-                $value['version'] = str_replace("v", "", strtolower($value['version']));
+            if(substr((string) $value['version'],-1,1)  == 'v' || substr((string) $value['version'],0,1) == 'v') {
+                $value['version'] = str_replace("v", "", strtolower((string) $value['version']));
             }
 
-            if (!strpos($value['siteRelPath'], "sysext")) {
+            if (!strpos((string) $value['siteRelPath'], "sysext")) {
                 // third party extensions
                 $formattedData .= 'typo3_extension_state{extKey="' . $key . '", actual="'. $value['version'] .'"} ' . VersionUtility::convertVersionToInteger($value['version']) . PHP_EOL;
             } else {

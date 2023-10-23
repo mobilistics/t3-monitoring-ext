@@ -16,7 +16,7 @@ namespace MobilisticsGmbH\PrometheusMonitoring;
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
  */
-
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use MobilisticsGmbH\PrometheusMonitoring\Utilities\VersionUtility;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -40,14 +40,14 @@ class MetricsExporter extends ActionController
         $access = false;
         $method = 'hmac';
 
-        if ((!empty($settings['secret']) && strlen($settings['secret']) >= 32)) {
+        if ((!empty($settings['secret']) && strlen((string) $settings['secret']) >= 32)) {
             if (!isset($settings['unsecure']) || $settings['unsecure'] != 1) {
                 $header = getallheaders();
                 if (is_array($header) && array_key_exists('Hmac', $header)) {
                     $hmac_header = $header['Hmac'];
                     $body = file_get_contents('php://input');
 
-                    if (hash_equals($hmac_header, hash_hmac('sha256', $body, $settings['secret']))) {
+                    if (hash_equals($hmac_header, hash_hmac('sha256', $body, (string) $settings['secret']))) {
                         $access = true;
                     }
                 }
@@ -70,7 +70,7 @@ class MetricsExporter extends ActionController
                     $response = $response->withHeader('Content-Type', 'text/plain; charset=utf-8');
                 } else {
                     $response = $response->withHeader('Content-Type', 'text/plain; charset=utf-8')
-                        ->withAddedHeader('HMAC', hash_hmac('sha256', $data, $settings['secret']));
+                        ->withAddedHeader('HMAC', hash_hmac('sha256', $data, (string) $settings['secret']));
                 }
 
                 $response->getBody()->write($data);
@@ -89,7 +89,7 @@ class MetricsExporter extends ActionController
     {
         $settings = $this->getSettings();
         // secret
-        if (!empty($settings['secret']) && strlen($settings['secret']) >= 32) {
+        if (!empty($settings['secret']) && strlen((string) $settings['secret']) >= 32) {
             $secret = $queryParams['secret'] ?? '';
             if ($secret !== $settings['secret']) {
                 return false;
@@ -109,14 +109,8 @@ class MetricsExporter extends ActionController
     {
         $configuration = [];
         try {
-            // @phpstan-ignore-next-line
-            $isVersion9Up = VersionUtility::convertVersionToInteger(TYPO3_version) >= 9000000;
-            if ($isVersion9Up) {
-                $extensionConfiguration = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\ExtensionConfiguration::class);
+                $extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class);
                 $configuration = $extensionConfiguration->get('prometheus_monitoring');
-            } elseif (array_key_exists('prometheus_monitoring', $GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'])) {
-                $configuration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['prometheus_monitoring']);
-            }
         } catch (\Exception $exception) {
             // do nothing
         }
