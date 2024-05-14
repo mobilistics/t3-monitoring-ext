@@ -63,19 +63,20 @@ class PrometheusDataService
     private function getPrometheusFormattedData(array $dataToFormat): string
     {
         $formattedData = 'typo3_version_state{actual="' . $dataToFormat['typo3Version'] . '"} ' . VersionUtility::convertVersionToInteger($dataToFormat['typo3Version']) . PHP_EOL;
-        foreach ($dataToFormat['extensions'] as $key => $value) {
 
+        foreach ($dataToFormat['extensions'] as $key => $value) {
             // cleanup version number
             if(substr((string) $value['version'],-1,1)  == 'v' || substr((string) $value['version'],0,1) == 'v') {
                 $value['version'] = str_replace("v", "", strtolower((string) $value['version']));
             }
 
-            if (!strpos((string) $value['siteRelPath'], "sysext")) {
-                // third party extensions
-                $formattedData .= 'typo3_extension_state{extKey="' . $key . '", actual="'. $value['version'] .'"} ' . VersionUtility::convertVersionToInteger($value['version']) . PHP_EOL;
-            } else {
+            if ($this->isCorePackage($value)) {
                 // core extensions
                 $formattedData .= 'typo3_core_extension_state{extKey="' . $key . '", actual="'. $value['version'] .'"} ' . VersionUtility::convertVersionToInteger($value['version']) . PHP_EOL;
+            } else {
+                // third party extensions
+                // TODO: Can be removed in the future since we don't depend on it anymore.
+                $formattedData .= 'typo3_extension_state{extKey="' . $key . '", actual="'. $value['version'] .'"} ' . VersionUtility::convertVersionToInteger($value['version']) . PHP_EOL;
             }
         }
 
@@ -83,6 +84,24 @@ class PrometheusDataService
         $formattedData .= $this->getPhpVersionMetric();
 
         return $formattedData;
+    }
+
+    private function isCorePackage(array $data): bool
+    {
+        $path = $data['siteRelPath'] ?? false;
+        if (!$path) {
+            return false;
+        }
+
+        $corePaths = ["sysext", "typo3/cms-"];
+
+        foreach ($corePaths as $corePath) {
+            if (str_contains($path, $corePath)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function getPhpVersionMetric(): string
