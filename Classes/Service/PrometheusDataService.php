@@ -79,6 +79,16 @@ class PrometheusDataService
             }
         }
 
+        // Add static metrics
+        $formattedData .= $this->getPhpVersionMetric();
+
         return $formattedData;
+    }
+
+    private function getPhpVersionMetric(): string
+    {
+        $phpVersion = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
+
+        return sprintf('php_info{version="%s"} 1', $phpVersion) . PHP_EOL;
     }
 }
