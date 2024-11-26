@@ -17,19 +17,13 @@ namespace MobilisticsGmbH\PrometheusMonitoring\Service;
 
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Package\PackageManager;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use MobilisticsGmbH\PrometheusMonitoring\Utilities\VersionUtility;
 
 class PrometheusDataService
 {
-    /**
-     * @var PackageManager
-     */
-    protected $packageManager;
-
-    public function __construct()
-    {
-        $this->packageManager = GeneralUtility::makeInstance(PackageManager::class);
+    public function __construct(
+        protected PackageManager $packageManager
+    ) {
     }
 
     /**

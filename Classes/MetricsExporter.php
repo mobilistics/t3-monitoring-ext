@@ -16,6 +16,7 @@ namespace MobilisticsGmbH\PrometheusMonitoring;
  * For the full copyright and license information, please read the
  * LICENSE file that was distributed with this source code.
  */
+
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use MobilisticsGmbH\PrometheusMonitoring\Utilities\VersionUtility;
 use Psr\Http\Message\ResponseInterface;
@@ -26,15 +27,21 @@ use TYPO3\CMS\Core\Utility\VersionNumberUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use MobilisticsGmbH\PrometheusMonitoring\Service\PrometheusDataService;
 
-class MetricsExporter extends ActionController
+class MetricsExporter
 {
+    public function __construct(
+        private PrometheusDataService $prometheusDataService,
+        private ExtensionConfiguration $extensionConfiguration,
+    ) {
+    }
+
     /**
      * @param ServerRequestInterface $request
      * @return ResponseInterface
      */
     public function export(ServerRequestInterface $request): ResponseInterface
     {
-        $response = GeneralUtility::makeInstance(Response::class);
+        $response = new Response();
         $settings = $this->getSettings();
 
         $access = false;
@@ -63,8 +70,7 @@ class MetricsExporter extends ActionController
 
             if ($access) {
                 // get prometheus data
-                $prometheusDataService = GeneralUtility::makeInstance(PrometheusDataService::class);
-                $data = $prometheusDataService->getPrometheusData();
+                $data = $this->prometheusDataService->getPrometheusData();
 
                 if ($method == 'get') {
                     $response = $response->withHeader('Content-Type', 'text/plain; charset=utf-8');
@@ -109,8 +115,7 @@ class MetricsExporter extends ActionController
     {
         $configuration = [];
         try {
-                $extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class);
-                $configuration = $extensionConfiguration->get('prometheus_monitoring');
+            $configuration = $this->extensionConfiguration->get('prometheus_monitoring');
         } catch (\Exception $exception) {
             // do nothing
         }
